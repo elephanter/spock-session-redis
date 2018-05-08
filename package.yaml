@@ -1,0 +1,60 @@
+# This YAML file describes your package. Stack will automatically generate a
+# Cabal file when you run `stack build`. See the hpack website for help with
+# this file: <https://github.com/sol/hpack>.
+name: spock-session-redis
+version: '0.0.1'
+github: "elephanter/spock-session-redis"
+license: MIT
+author: "Eremeev Danil"
+maintainer: "Eremeev Danil"
+synopsis: Spock redis session storage plugin
+description: spock-session-redis is a redis persistant spock session plugin.
+category: Web, Storage, Session
+
+extra-source-files:
+- CHANGELOG.md
+- LICENSE.md
+- package.yaml
+- README.md
+- stack.yaml
+
+ghc-options: -Wall
+
+library:
+  dependencies:
+  - base
+  - Spock >= 0.11
+  - hedis
+  - aeson
+  - text
+  - time
+  - bytestring
+  - http-types
+  source-dirs: library
+
+benchmarks:
+  spock-session-redis-benchmarks:
+    source-dirs: benchmark
+    main: Main.hs
+    dependencies:
+    - base
+    - spock-session-redis
+    - criterion
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+
+tests:
+  spock-session-redis-test-suite:
+    source-dirs: test-suite
+    main: Main.hs
+    dependencies:
+    - base
+    - spock-session-redis
+    - tasty
+    - tasty-hspec
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
