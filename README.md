@@ -1,6 +1,6 @@
 # [spock-session-redis][]
 
-Store [Spock](https://github.com/asdf/spock) session in Redis storage using [Hedis](https://) package
+Store [Spock](https://github.com/agrafix/Spock) session in Redis storage using [Hedis](https://github.com/informatikr/hedis) package
 
 Session objects are serialized by aeson package.
 Empty objects not stored in Redis
