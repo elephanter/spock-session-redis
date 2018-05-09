@@ -29,8 +29,9 @@ library:
   - text
   - time
   - bytestring
-  - http-types
   source-dirs: library
+  exposed-modules:
+  - Web.Spock.Session.Redis.Config
 
 benchmarks:
   spock-session-redis-benchmarks:
