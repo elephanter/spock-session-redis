@@ -20,7 +20,7 @@ import qualified Web.Spock as S
 import Web.Spock.Config hiding (defaultSpockCfg)
 import qualified Data.Text as T
 import qualified Database.Redis as R
-import Web.Spock.Session.Redis.Config (defaultSpockCfg)
+import Web.Spock.Session.Redis.Config (getSpockCfg)
 
 data Sess = SessionUserId T.Text | EmptySession deriving (Generic)
 instance ToJSON Sess where
@@ -31,10 +31,15 @@ instance FromJSON Sess
 main :: IO ()
 main = do
     redisConnectionPool <- R.connect R.defaultConnectInfo
-    scfg <- defaultSpockCfg redisConnectionPool EmptySession () ()
+    scfg <- getSpockCfg redisConnectionPool EmptySession () ()
     S.runSpock 8080 (S.spock scfg app)
 
-def app = undefined
+def app = do
+    mgr <- S.getSessMgr
+    liftIO $ SM.sm_closeSessionManager mgr
+    ...
 ```
+
+sm_closeSessionManager is called because we need shut down Spock housekeepThread. Because now we have redis watching session ttl for us.
 
 [spock-session-redis]: https://github.com/githubuser/spock-session-redis

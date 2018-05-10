@@ -45,6 +45,9 @@ storeSession s conn = R.runRedis conn $
   where
     s_val = (toStrict . encode) $ sess_data s
 
+toList :: R.Connection -> IO [Session conn a st]
+toList _ = return []
+
 newRedisSessionStore' ::(ToJSON a, FromJSON a) => R.Connection -> IO (SessionStore (Session conn a st) IO)
 newRedisSessionStore' conn = return
   SessionStore
@@ -52,7 +55,7 @@ newRedisSessionStore' conn = return
          , ss_loadSession = flip loadSession conn
          , ss_deleteSession = flip deleteSession conn
          , ss_storeSession = flip storeSession conn
-         , ss_toList = undefined --toList conn
+         , ss_toList = toList conn
          , ss_filterSessions = undefined --flip filterSessions conn
          , ss_mapSessions = undefined --flip mapSessions conn
          }
