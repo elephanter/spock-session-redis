@@ -5,10 +5,6 @@ Store [Spock](https://github.com/agrafix/Spock) session in Redis storage using [
 Session objects are serialized by aeson package.
 Empty objects not stored in Redis
 
-## To do:
-- Set ttl for redis keys
-- ss_toList, ss_filterSessions, ss_mapSessions are not implemented yet
-
 example usage:
 
 ```haskell

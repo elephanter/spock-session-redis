@@ -6,7 +6,8 @@ import Web.Spock
 import Web.Spock.Config
 import Web.Spock.Internal.SessionManager
 import Control.Monad.IO.Class
-import Data.Time (getCurrentTime)
+import Data.Time (getCurrentTime, addUTCTime)
+import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import qualified Database.Redis as R
 import qualified Data.Text.Encoding as T
 import Data.Aeson
@@ -14,20 +15,17 @@ import Data.Aeson.Types (Value(Null))
 import Data.ByteString.Lazy (toStrict)
 
 loadSession ::(FromJSON a) => SessionId -> R.Connection -> IO (Maybe (Session conn a st))
-loadSession key conn = do
-  curtime <- getCurrentTime
-  R.runRedis conn $ do
-    get_val <- R.get (T.encodeUtf8 key)
-    case get_val of
-      Right mval ->
-        case mval of
-          Just val -> do
-                let e_decoded = decodeStrict' val
-                case e_decoded of
-                  Just decoded -> return $ Just $ Session key "" curtime decoded
-                  _ -> return Nothing
-          _ -> return Nothing
+loadSession key conn = R.runRedis conn $ do
+    curtime <- liftIO getCurrentTime
+    val <- R.get ekey
+    case either (const Nothing) (decodeStrict' =<<) val of
+      Just decoded -> do
+        ttl <- R.ttl ekey
+        let expAt = either (const curtime) ((`addUTCTime` curtime) . fromInteger) ttl
+        return $ Just $ Session key "" expAt decoded
       _ -> return Nothing
+  where
+    ekey = T.encodeUtf8 key
 
 
 deleteSession :: SessionId -> R.Connection -> IO ()
@@ -40,9 +38,11 @@ storeSession s conn = R.runRedis conn $
   case toJSON (sess_data s) of
     Null -> return ()
     _    -> do
-      _ <- R.mset [(T.encodeUtf8 $ sess_id s, s_val)]
+      _ <- R.mset [(key, s_val)]
+      _ <- R.expireat key (round . utcTimeToPOSIXSeconds $ sess_validUntil s)
       return ()
   where
+    key = T.encodeUtf8 $ sess_id s
     s_val = (toStrict . encode) $ sess_data s
 
 toList :: R.Connection -> IO [Session conn a st]
