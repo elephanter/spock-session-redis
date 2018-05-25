@@ -18,10 +18,8 @@ import qualified Data.Text as T
 import qualified Database.Redis as R
 import Web.Spock.Session.Redis.Config (getSpockCfg)
 
-data Sess = SessionUserId T.Text | EmptySession deriving (Generic)
-instance ToJSON Sess where
-    toJSON (SessionUserId t) = String t
-    toJSON EmptySession = Null
+data Sess = SessionUserId { uid :: T.Text} | EmptySession deriving (Generic)
+instance ToJSON Sess
 instance FromJSON Sess
 
 main :: IO ()
